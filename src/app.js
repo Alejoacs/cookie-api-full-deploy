@@ -3,7 +3,6 @@ import morgan from 'morgan';
 import pkg from '../package.json'
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
-import http from 'http';
 
 import { createRoles } from './libs/initialSetup.js';
 
@@ -13,14 +12,10 @@ import userRoutes from './routes/user/user.routes.js';
 import profileRoutes from './routes/user/profile.routes.js';
 import chatRoutes from './routes/chat/ChatRoutes.js';
 import messageRoutes from './routes/chat/MessageRoutes.js';
-import { Server as SocketServer } from 'socket.io';
 
 // SERVER INITIALIZATION
 const app = express();
-const server = http.createServer(app);
 createRoles();
-
-const io = new SocketServer(server); 
 
 app.set('pkg', pkg);
 
@@ -32,29 +27,6 @@ app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: './tmp'
 }));
-
-io.on('connection', (socket) => {
-  console.log(socket.id);
-
-  socket.on('joinRoom', (roomId) => {
-    socket.join(roomId);
-  });
-
-  socket.on('message', (message) => {
-    console.log(message);
-    io.to(message.roomId).emit('message', {
-      body: message.body,
-      from: socket.id.slice(6),
-    });
-  });
-});
-
-
-// Socket server
-const PORT = 3001;
-server.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
-});
 
 // ROUTES
 app.get('/', (req, res) => {

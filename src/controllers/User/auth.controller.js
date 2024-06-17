@@ -2,6 +2,7 @@ import User from "../../models/User.js";
 import jwt from 'jsonwebtoken';
 import config from '../../config.js';
 import Role from "../../models/Role.js";
+import LogsLogin from "../../models/LogsLogin.js";
 import sendSignUpEmail from "../../utils/emails/signupEmail.js"
 import sendSignInEmail from "../../utils/emails/signinEmail.js"
 import sendCodeRecoverEmail from '../../utils/emails/codeEmail.js'
@@ -84,6 +85,9 @@ exports.signin = async (req, res) => {
 
         // userFound.sesion = true;
         await userFound.save();
+        new LogsLogin({ 
+            userId: userFound._id
+        }).save();
 
         console.log(userFound);
         await sendSignInEmail(userFound.email, userFound.username);
