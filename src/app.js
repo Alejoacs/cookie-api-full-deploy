@@ -1,27 +1,29 @@
 import express from 'express';
 import morgan from 'morgan';
-import pkg from '../package.json'
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
+import connectDB from './database.js';
 
 import { createRoles } from './libs/initialSetup.js';
 
-// ROUTES IMPORTS
 import authRoutes from './routes/user/auth.routes.js';
 import userRoutes from './routes/user/user.routes.js';
 import profileRoutes from './routes/user/profile.routes.js';
 import chatRoutes from './routes/chat/ChatRoutes.js';
 import messageRoutes from './routes/chat/MessageRoutes.js';
-import statsRoutes from './routes/user/stats.routes.js';
+import statsRoutes from './routes/user/stats.routes.js'
 
-// SERVER INITIALIZATION
+connectDB();
+
 const app = express();
 createRoles();
 
-app.set('pkg', pkg);
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true, 
+}));
 
 app.use(express.json());
-app.use(cors());
 app.use(morgan('dev'));
 
 app.use(fileUpload({
@@ -29,20 +31,18 @@ app.use(fileUpload({
   tempFileDir: './tmp'
 }));
 
-// ROUTES
+// Rutas
 app.get('/', (req, res) => {
   res.json({
-    name: app.get('pkg').name,
-    author: app.get('pkg').author,
-    description: app.get('pkg').description,
-    version: app.get('pkg').version,
+    message: 'API is running',
   });
 });
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/chat/messages', messageRoutes);
-app.use('/api/stats', statsRoutes)
+app.use('/api/stats', statsRoutes);
 
 export default app;

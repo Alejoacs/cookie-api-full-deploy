@@ -1,6 +1,32 @@
+import http from "http";
+import { Server as SocketServer } from 'socket.io';
 import app from './app.js';
-import './database.js';
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-}); 
+const PORT = 3001;
+
+const server = http.createServer(app);
+
+export const io = new SocketServer(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+
+  socket.on('joinRoom', (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
+});

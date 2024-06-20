@@ -1,33 +1,32 @@
 import Message from '../../models/Message.js';
 import Chat from '../../models/Chat.js';
-import { io } from '../../socketConfig.js';
+import { io } from '../../index.js';
 import { uploadImage } from '../../cloudinary.js';
 import jwt from 'jsonwebtoken';
 import config from '../../config.js'
 import User from '../../models/User.js';
 import fs from 'fs-extra';
 
-exports.createMessage = async (req, res) => {
+const createMessage = async (req, res) => {
   try {
     const token = req.headers['x-access-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
     const decoded = jwt.verify(token, config.secret);
     const userId = decoded.id;
     const { chatId } = req.params;
+    const { content } = req.body;
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
 
     const sender = user._id;
-    const { content } = req.body;
 
-    const messageData = { sender };
-
-    if (content) {
-      messageData.content = content;
-    }
+    const messageData = { sender, content };
 
     const message = new Message(messageData);
 
@@ -43,18 +42,23 @@ exports.createMessage = async (req, res) => {
     await message.save();
 
     const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ error: 'Chat not found' });
+    }
+
     chat.messages.push(message);
     await chat.save();
 
-    io.emit('newMessage', message, chatId);
+    io.to(chatId).emit('newMessage', { ...message.toObject(), chatId });
+
     return res.status(201).json(message);
   } catch (error) {
-    console.error("Error creating message:", error);
+    console.error('Error creating message:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+};
 
-exports.getAllMessages = async (req, res) => {
+const getAllMessages = async (req, res) => {
   try {
     const token = req.headers['x-access-token'];
     const decodedToken = jwt.verify(token, config.secret);
@@ -80,7 +84,7 @@ exports.getAllMessages = async (req, res) => {
   }
 }
 
-exports.getMessageById = async (req, res) => {
+const getMessageById = async (req, res) => {
   try {
     const { chatId, messageId } = req.params;
 
@@ -101,7 +105,7 @@ exports.getMessageById = async (req, res) => {
   }
 }
 
-exports.updateMessage = async (req, res) => {
+const updateMessage = async (req, res) => {
   try {
     const token = req.headers['x-access-token'];
     const decoded = jwt.verify(token, config.secret);
@@ -130,7 +134,7 @@ exports.updateMessage = async (req, res) => {
 }
 
 
-exports.deleteMessage = async (req, res) => {
+const deleteMessage = async (req, res) => {
   try {
     const token = req.headers['x-access-token'];
     const decoded = jwt.verify(token, config.secret);
@@ -164,3 +168,5 @@ exports.deleteMessage = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+
+export { createMessage, updateMessage, deleteMessage, getAllMessages, getMessageById }
