@@ -3,7 +3,7 @@ import { getProfile, updateProfile, changePassword } from '../../controllers/Use
 import { verifyToken, isUser } from '../../middlewares/authJwt.js'
 const router = Router()
 
-router.get('/', [verifyToken, isUser], getProfile)
+router.get('/', [verifyToken], getProfile)
 router.put('/', [verifyToken], updateProfile)
 router.put('/change-password', [verifyToken, isUser], changePassword)
 
