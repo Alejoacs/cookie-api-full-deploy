@@ -116,9 +116,10 @@ const codeRecoverPassword = async (req, res) => {
             return res.status(404).json({ message: "Email not found." });
         }
 
-        const code = Math.random().toString(36).substring(2, 7) + Math.random().toString(36).substring(2, 7)
-        user.code = code;
-        await user.save();
+        const code = Math.random().toString(36).substring(2, 7) + Math.random().toString(36).substring(2, 7);
+        
+        // Actualiza solo el campo code del usuario
+        await User.updateOne({ email }, { $set: { code: code } }, { validate: false });
 
         const token = jwt.sign({ email, code }, config.secret);
         await sendCodeRecoverEmail(user.email, code);
