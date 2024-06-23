@@ -22,12 +22,13 @@ const getAllSexes = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await post.find()
-      .populate('userId');
-    res.status(200).json({ posts })
+    const posts = await Post.find()
+      .populate('userId', {}); // Poblar todos los campos del usuario
+
+    res.status(200).json({ posts });
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message });
   }
-}
+};
 
 export { getAllLogins, getAllSexes, getAllPosts };
