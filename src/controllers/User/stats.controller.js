@@ -22,9 +22,7 @@ const getAllSexes = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
-      .populate('userId', 'username fullname');
-
+    const posts = await Post.find();
     res.status(200).json({ posts });
   } catch (error) {
     res.status(500).json({ error: error.message });
