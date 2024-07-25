@@ -2,15 +2,15 @@ import User from "../models/User.js";
 
 const validateRegister = async (username, email, password) => {
     if (username.length < 8 || username.length > 20) {
-        throw new Error("Username must be between 8 and 20 characters");
+        throw new Error("Username must be between 8 and 20 characters long");
     }
 
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-        throw new Error("The email is not valid");
+        throw new Error("Email is not valid");
     }
 
     if (password.length < 8 || password.length > 16) {
-        throw new Error("Password must be between 8 and 16 characters");
+        throw new Error("Password must be between 8 and 16 characters long");
     }
 
     const userExists = await User.findOne({ username });
