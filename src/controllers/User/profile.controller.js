@@ -4,6 +4,7 @@ import config from "../../config.js";
 import { uploadImage } from "../../cloudinary.js";
 import sendChangePasswordEmail from "../../utils/emails/changePasswordEmail.js";
 import fs from "fs-extra";
+import io from 'socket.io';
 
 const getProfile = async (req, res) => {
   try {
@@ -22,15 +23,7 @@ const updateProfile = async (req, res) => {
     const decoded = jwt.verify(token, config.secret);
 
     const userId = decoded.id;
-    const {
-      username,
-      email,
-      password,
-      fullname,
-      gender,
-      phone_number,
-      description,
-    } = req.body;
+    const { username, email, password, fullname, gender, phone_number, description } = req.body;
 
     let updateFields = {
       username,
@@ -52,6 +45,7 @@ const updateProfile = async (req, res) => {
     }
 
     const user = await User.findByIdAndUpdate(userId, updateFields);
+    io.emit('userUpdate', user);
     res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
     res.status(500).json({ message: error.message });

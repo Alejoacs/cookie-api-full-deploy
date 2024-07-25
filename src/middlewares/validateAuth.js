@@ -2,25 +2,25 @@ import User from "../models/User.js";
 
 const validateRegister = async (username, email, password) => {
     if (username.length < 8 || username.length > 20) {
-        throw new Error("El nombre de usuario debe tener entre 8 y 20 caracteres");
+        throw new Error("Username must be between 8 and 20 characters");
     }
 
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-        throw new Error("El correo electrónico no es válido");
+        throw new Error("The email is not valid");
     }
 
     if (password.length < 8 || password.length > 16) {
-        throw new Error("La contraseña debe tener entre 8 y 16 caracteres");
+        throw new Error("Password must be between 8 and 16 characters");
     }
 
     const userExists = await User.findOne({ username });
     if (userExists) {
-        throw new Error("El nombre de usuario ya está en uso");
+        throw new Error("Username is already in use");
     }
 
     const emailExists = await User.findOne({ email });
     if (emailExists) {
-        throw new Error("El correo electrónico ya está en uso");
+        throw new Error("Email is already in use");
     }
 };
 
@@ -28,13 +28,13 @@ const validateLogin = async (emailOrUsername, password) => {
     const userFound = await User.findOne({ $or: [{ email: emailOrUsername }, { username: emailOrUsername }] }).populate("role");
 
     if (!userFound) {
-        throw new Error("Usuario no encontrado");
+        throw new Error("User not found");
     }
 
     const matchPassword = await User.comparePassword(password, userFound.password);
 
     if (!matchPassword) {
-        throw new Error("Contraseña inválida");
+        throw new Error("Invalid password");
     }
 };
 

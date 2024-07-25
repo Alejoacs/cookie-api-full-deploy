@@ -34,17 +34,14 @@ const signup = async (req, res) => {
         }
 
         const savedUser = await newUser.save();
-        console.log(savedUser);
 
-        const token = jwt.sign({ id: savedUser._id }, config.secret, {
-            expiresIn: 86400
-        });
+        const token = jwt.sign({ id: savedUser._id }, config.secret, { expiresIn: 86400 });
 
         await sendSignUpEmail(email, username)
 
         res.status(200).json({ token });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error Registering User', Details: error });
     }
 };
 
@@ -89,7 +86,7 @@ const signin = async (req, res) => {
         await sendSignInEmail(userFound.email, userFound.username);
         res.json({ token });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error Signing In', Details: error });
     }
 };
 
@@ -103,7 +100,7 @@ const logout = async (req, res) => {
         await userFound.save();
         res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error Logging Out', Details: error });
     }
 }
 
@@ -117,7 +114,7 @@ const codeRecoverPassword = async (req, res) => {
         }
 
         const code = Math.random().toString(36).substring(2, 7) + Math.random().toString(36).substring(2, 7);
-        
+
         // Actualiza solo el campo code del usuario
         await User.updateOne({ email }, { $set: { code: code } }, { validate: false });
 
@@ -125,7 +122,7 @@ const codeRecoverPassword = async (req, res) => {
         await sendCodeRecoverEmail(user.email, code);
         res.status(200).json({ token });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error Recovering Password', Details: error });
     }
 }
 
@@ -148,7 +145,7 @@ const validateCode = async (req, res) => {
         const newToken = jwt.sign({ email: decode.email, code: code }, config.secret);
         res.status(200).json({ token: newToken });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error Validating Code', Details: error });
     }
 }
 
@@ -156,27 +153,27 @@ const changePassword = async (req, res) => {
     try {
         const token = req.headers['reset-pass-token'];
         const decode = jwt.verify(token, config.secret);
-        const user = await User.findOne({email: decode.email});
+        const user = await User.findOne({ email: decode.email });
 
         if (!user) {
-            return res.status(404).json({message: "User not found or code is incorrect."})
+            return res.status(404).json({ message: "User not found or code is incorrect." })
         }
 
-        const {password} = req.body;
+        const { password } = req.body;
 
         if (!password) {
-            return res.status(400).json({message: "Please provide a new password."})
+            return res.status(400).json({ message: "Please provide a new password." })
         }
 
         user.password = await User.encryptPassword(password);
-        user.code = null; 
+        user.code = null;
         await user.save();
 
         await sendChangePasswordEmail(user.email, user.username)
 
-        res.status(200).json({message: "Password changed successfully."});
+        res.status(200).json({ message: "Password changed successfully." });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: 'Error Changing Password', Details: error });
     }
 }
 

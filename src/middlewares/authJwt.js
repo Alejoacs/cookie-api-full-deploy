@@ -3,7 +3,7 @@ import config from '../config.js'
 import User from '../models/User.js'
 import Role from '../models/Role.js'
 
-const verifyToken = async (req, res, next) => {
+exports.verifyToken = async (req, res, next) => {
     try {
         const token = req.headers['x-access-token'];
 
@@ -21,7 +21,7 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
-const isAdmin = async (req, res, next) => {
+exports.isAdmin = async (req, res, next) => {
     const user = await User.findById(req.userId);
     const roles = await Role.find({ _id: { $in: user.role } });
     for (let i = 0; i < roles.length; i++) {
@@ -33,7 +33,7 @@ const isAdmin = async (req, res, next) => {
     res.status(403).json({ message: 'Required Admin Role' });
 };
 
-const isModerator = async (req, res, next) => {
+exports.isModerator = async (req, res, next) => {
     const user = await User.findById(req.userId);
     const roles = await Role.find({ _id: { $in: user.role } });
     
@@ -47,7 +47,7 @@ const isModerator = async (req, res, next) => {
     return res.status(403).json({ message: 'Required Moderator Role' });
 };
 
-const isUser = async (req, res, next) => {
+exports.isUser = async (req, res, next) => {
     const user = await User.findById(req.userId);
     const roles = await Role.find({ _id: { $in: user.role } });
     
@@ -61,7 +61,7 @@ const isUser = async (req, res, next) => {
     return res.status(403).json({ message: 'Required User Role' });
 };
 
-const isModeratorOrAdmin = async (req, res, next) => {
+exports.isModeratorOrAdmin = async (req, res, next) => {
     const user = await User.findById(req.userId);
     const roles = await Role.find({ _id: { $in: user.role } });
     for (let i = 0; i < roles.length; i++) {
@@ -73,4 +73,3 @@ const isModeratorOrAdmin = async (req, res, next) => {
     res.status(403).json({ message: 'Required Moderator or Admin Role' });
 };
 
-export { verifyToken, isAdmin, isModerator, isUser, isModeratorOrAdmin }
